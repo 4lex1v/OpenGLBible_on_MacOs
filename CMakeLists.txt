@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8)
 
 project (superbible7)
 
@@ -16,19 +16,30 @@ foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_SOURCE_DIR}/lib )
 endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
-find_package(OpenGL)
+find_package(OpenGL REQUIRED)
 
 set (CMAKE_DEBUG_POSTFIX "_d")
 
 if(WIN32)
-set(COMMON_LIBS sb7 optimized glfw3 debug glfw3_d ${GLFW_LIBRARIES} ${OPENGL_LIBRARIES})
-elseif (UNIX)
+set(COMMON_LIBS sb7 optimized glfw debug glfw3_d ${GLFW_LIBRARIES} ${OPENGL_LIBRARIES})
+elseif(UNIX)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GLFW REQUIRED glfw3)
-set(COMMON_LIBS sb7 glfw3 X11 Xrandr Xinerama Xi Xxf86vm Xcursor GL rt dl)
+#set(COMMON_LIBS sb7 glfw Xrandr X11 Xinerama Xi Xxf86vm Xcursor GL rt dl)
+set(COMMON_LIBS sb7 glfw ${GLFW_LIBRARIES})
 else()
 set(COMMON_LIBS sb7)
 endif()
+
+IF(APPLE)
+  INCLUDE_DIRECTORIES(/System/Library/Frameworks)
+  FIND_LIBRARY(COCOA_LIBRARY Cocoa)
+  FIND_LIBRARY(OpenGL_LIBRARY OpenGL)
+  FIND_LIBRARY(IOKit_LIBRARY IOKit)
+  MARK_AS_ADVANCED(COCOA_LIBRARY OpenGL_LIBRARY)
+  SET(EXTRA_LIBS ${COCOA_LIBRARY} ${IOKit_LIBRARY} ${OpenGL_LIBRARY})
+  SET(EXTRA_LIBS ${EXTRA_LIBS} /usr/local/lib/libglfw.3.2.dylib /usr/local/opt/llvm/lib/libomp.dylib)
+ENDIF(APPLE)
 
 set(COMMON_LIBS ${COMMON_LIBS} ${EXTRA_LIBS})
 
@@ -130,11 +141,12 @@ set(EXAMPLES
   wrapmodes
 )
 
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
+# OPTION(USE_OPENMP "Enable OpenMP" ON)
+# find_package(OpenMP REQUIRED)
+# if (OPENMP_FOUND)
+#     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+#     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+# endif()
 
 foreach(EXAMPLE ${EXAMPLES})
   add_executable(${EXAMPLE} WIN32 src/${EXAMPLE}/${EXAMPLE}.cpp)
@@ -149,8 +161,8 @@ IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_LINUX -std=c++0x")
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-include_directories( include )
-include_directories(extern/glfw-3.0.4/include)
+include_directories(include)
+include_directories(extern/glfw-3.2/include)
 
 ADD_CUSTOM_TARGET(debug ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE:STRING=Debug ${PROJECT_SOURCE_DIR})
 ADD_CUSTOM_TARGET(release ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE:STRING=Release ${PROJECT_SOURCE_DIR})

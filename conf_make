@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+#cmake -LA -DCMAKE_C_COMPILER=$(which clang) -DCMAKE_CXX_COMPILER=$(which clang++) .
+cmake -DCMAKE_C_COMPILER=$(which clang) -DCMAKE_CXX_COMPILER=$(which clang++) .
+make
+
+# Local Variables:
+# mode: sh
+# End:
