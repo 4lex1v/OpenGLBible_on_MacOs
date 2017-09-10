@@ -60,6 +60,7 @@ set(EXAMPLES
   basic_app
   basic_animation
   basic_shaders
+  basic_triangle
 )
 # set(EXAMPLES
 #   alienrain
