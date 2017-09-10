@@ -55,6 +55,12 @@ add_library(sb7
 
 set(RUN_DIR ${PROJECT_SOURCE_DIR}/bin)
 
+set(EXAMPLES
+  # Chapter 2
+  basic_app
+  basic_animation
+  basic_shaders
+)
 # set(EXAMPLES
 #   alienrain
 #   basicfbo
